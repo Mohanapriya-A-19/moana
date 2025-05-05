@@ -1,0 +1,76 @@
+const boardElement = document.getElementById("board");
+const statusText = document.getElementById("status");
+let board = ["", "", "", "", "", "", "", "", ""];
+let currentPlayer = "X"; // Mohana
+let isGameActive = true;
+
+function renderBoard() {
+  boardElement.innerHTML = "";
+  board.forEach((cell, index) => {
+    const div = document.createElement("div");
+    div.classList.add("cell");
+    div.dataset.index = index;
+    div.textContent = cell;
+    div.addEventListener("click", () => handleCellClick(index));
+    boardElement.appendChild(div);
+  });
+}
+
+function handleCellClick(index) {
+  if (!isGameActive || board[index] !== "") return;
+  board[index] = currentPlayer;
+  renderBoard();
+  if (checkWinner(currentPlayer)) {
+    statusText.textContent = currentPlayer === "X" ? "Mohana wins!" : "AI wins!";
+    isGameActive = false;
+    return;
+  }
+  if (board.every(cell => cell !== "")) {
+    statusText.textContent = "It's a draw!";
+    isGameActive = false;
+    return;
+  }
+  currentPlayer = currentPlayer === "X" ? "O" : "X";
+  statusText.textContent = currentPlayer === "X" ? "Mohana's turn (X)" : "AI's turn (O)";
+  if (currentPlayer === "O") {
+    setTimeout(aiMove, 500);
+  }
+}
+
+function aiMove() {
+  let available = board.map((v, i) => (v === "" ? i : null)).filter(v => v !== null);
+  let choice = available[Math.floor(Math.random() * available.length)];
+  board[choice] = "O";
+  renderBoard();
+  if (checkWinner("O")) {
+    statusText.textContent = "AI wins!";
+    isGameActive = false;
+    return;
+  }
+  if (board.every(cell => cell !== "")) {
+    statusText.textContent = "It's a draw!";
+    isGameActive = false;
+    return;
+  }
+  currentPlayer = "X";
+  statusText.textContent = "Mohana's turn (X)";
+}
+
+function checkWinner(player) {
+  const wins = [
+    [0,1,2], [3,4,5], [6,7,8],
+    [0,3,6], [1,4,7], [2,5,8],
+    [0,4,8], [2,4,6]
+  ];
+  return wins.some(combo => combo.every(i => board[i] === player));
+}
+
+function restartGame() {
+  board = ["", "", "", "", "", "", "", "", ""];
+  currentPlayer = "X";
+  isGameActive = true;
+  statusText.textContent = "Mohana's turn (X)";
+  renderBoard();
+}
+
+renderBoard();
